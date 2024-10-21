@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GUESS THE NUMBER GAME</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-800 text-white flex flex-col items-center justify-center min-h-screen">
+  <!-- Front Page Section -->
+  <div id="login-page" class="text-center">
+    <h1 class="text-4xl font-bold mb-6 text-sky-600">Welcome to Guess the Number Game!</h1>
+    
+    <label for="player-name-input" class="block text-lg font-semibold mb-2">Enter your Name:</label>
+    <input type="text" id="player-name-input" class="w-full p-2 mb-4 rounded bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-600 text-center" placeholder="Your Name">
+    
+    <button onclick="startGame()" class="w-full p-3 bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600">Start Game</button>
+  </div>
+
+  <!-- Game Page Section -->
+  <div id="game-page" class="hidden max-w-md mx-auto p-6 bg-gray-900 rounded-lg shadow-md text-center">
+    <h1 class="text-3xl font-bold mb-4 text-sky-600">??? Guess the Number ??? </h1>
+
+    <div class="mb-4">
+      <p class="text-lg">Player: <span class="font-semibold" id="player-name">GIO</span></p>
+      <p class="text-lg">Balance: <span class="font-semibold" id="balance">100</span> Pesos</p>
+    </div>
+
+    <div class="mb-4">
+      <label for="guess-number" class="block text-lg font-semibold mb-2">Enter your Guess:</label>
+      <input value="0" type="number" id="guess-number" class="w-full p-2 rounded bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-600 text-center" placeholder="1-100">
+    </div>
+
+    <div class="mb-4">
+      <label for="bet-amount" class="block text-lg font-semibold mb-2">Enter your Bet:</label>
+      <input value="0" type="number" id="bet-amount" class="w-full p-2 rounded bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-600 text-center" placeholder="Bet Amount">
+    </div>
+
+    <button onclick="guessNumber.play()" class="w-full p-3 bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600">Submit Guess</button>
+
+    <p class="mt-4 text-xl" id="result-message"></p>
+    <p class="mt-2 text-lg text-yellow-400" id="condition-message"></p>
+
+    <!-- Exit Button -->
+    <button onclick="exitGame()" class="mt-4 w-full p-3 bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600">Exit Game</button>
+  </div>
+
+  <script>
+    // Function to start the game
+    function startGame() {
+      const playerNameInput = document.getElementById('player-name-input').value;
+      if (playerNameInput.trim() === '') {
+        alert('Please enter your name to start the game.');
+        return;
+      }
+      
+      // Hide login page and show game page
+      document.getElementById('login-page').classList.add('hidden');
+      document.getElementById('game-page').classList.remove('hidden');
+
+      // Set player name
+      let playerNameElement = document.getElementById('player-name');
+      playerNameElement.innerText = playerNameInput;
+      
+      // Set the player name in the game object
+      guessNumber.player.name = playerNameInput;
+    }
+
+    // Function to exit the game and return to the front page
+    function exitGame() {
+      // Reset the game state
+      guessNumber.player.balance = 100;
+      document.getElementById('balance').innerText = guessNumber.player.balance;
+      document.getElementById('result-message').innerText = '';
+      document.getElementById('condition-message').innerText = '';
+      document.getElementById('guess-number').value = 0;
+      document.getElementById('bet-amount').value = 0;
+
+      // Show login page and hide game page
+      document.getElementById('login-page').classList.remove('hidden');
+      document.getElementById('game-page').classList.add('hidden');
+    }
+
+    let gio = {
+      name: "Alvin",
+      balance: 100,
+    };
+
+    const secretNumber = Math.floor(Math.random() * 100) + 1;
+
+    let guessNumber = {
+      player: gio,
+      number: secretNumber,
+      betNow: function() {
+        console.log("LET'S BEGIN...JUST FOLLOW THE INSTRUCTIONS BELOW.");
+      },
+      checkBalance: function() {
+        let playerBalance = document.getElementById("balance");
+        playerBalance.innerText = this.player.balance;
+
+        if (this.player.balance <= 0) {
+          document.getElementById("result-message").innerText = "!😭 YOU LOSE 😭! BETTER LUCK NEXT TIME!";
+        }
+      },
+      resetSecret: function() {
+        this.number = Math.floor(Math.random() * 100) + 1;
+      },
+      bet: function(amount) {
+        let resultMessageElement = document.getElementById("result-message");
+
+        if (amount < 1) {
+          resultMessageElement.innerText = "🚫 NOT ALLOWED!!! THE BET MUST BE GREATER THAN OR EQUAL TO 1 🚫";
+          return false;
+        }
+
+        if (amount > this.player.balance) {
+          resultMessageElement.innerText = "🚫OHH NO!!! YOU HAVE INSUFFICIENT BALANCE🚫 " + this.player.balance;
+          return false;
+        } else {
+          this.player.balance -= amount;
+          return true;
+        }
+      },
+      play: function() {
+        let guess = parseInt(document.getElementById("guess-number").value);
+        let bet = parseInt(document.getElementById("bet-amount").value);
+        let resultMessageElement = document.getElementById("result-message");
+        let conditionMessageElement = document.getElementById("condition-message");
+
+        if (guess < 1 || guess > 100) {
+          resultMessageElement.innerText = "🚫 NOT ALLOWED!!! GUESS A NUMBER FROM 1 TO 100.";
+          conditionMessageElement.innerText = "";
+          return false;
+        }
+
+        let allow = this.bet(bet);
+
+        if (allow) {
+          let difference = this.number - guess;
+
+          if (guess === this.number) {
+            resultMessageElement.innerText = "🎉 CONGRATULATIONS! YOU WON THE JACKPOT! 🎉";
+            conditionMessageElement.innerText = `You hit the exact number: ${this.number}! You win ${bet * 10} PESOS!`;
+            let prize = bet * 10;
+            this.player.balance += prize;
+          } else if (Math.abs(difference) <= 5) {
+            resultMessageElement.innerText = "🎯 ALMOST THERE! YOU WON! 🎯";
+            conditionMessageElement.innerText = `Your guess was within 5 of the number: ${this.number}. You win ${bet * 3} PESOS!`;
+            let prize = bet * 3;
+            this.player.balance += prize;
+          } else if (Math.abs(difference) <= 10) {
+            resultMessageElement.innerText = "🎯 CLOSE! YOU STILL WON! 🎯";
+            conditionMessageElement.innerText = `Your guess was within 10 of the number: ${this.number}. You win ${bet * 2} PESOS!`;
+            let prize = bet * 2;
+            this.player.balance += prize;
+          } else {
+            resultMessageElement.innerText = "❌ YOU LOSE ❌";
+            conditionMessageElement.innerText = `The exact number was: ${this.number}. Better luck next time!`;
+          }
+
+          this.checkBalance();
+          this.resetSecret();
+        }
+      },
+    };
+
+    guessNumber.betNow();
+  </script>
+</body>
+</html>
